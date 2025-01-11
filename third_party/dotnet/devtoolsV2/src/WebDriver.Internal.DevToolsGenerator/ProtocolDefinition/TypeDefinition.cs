@@ -19,7 +19,7 @@ public sealed class TypeDefinition : ProtocolDefinitionItem
     public ICollection<TypeDefinition> Properties { get; set; } = new Collection<TypeDefinition>();
 
     [JsonPropertyName("items")]
-    public TypeDefinition Items { get; set; }
+    public TypeDefinition? Items { get; set; }
 
     [JsonPropertyName("minItems")]
     public int MinItems { get; set; }
@@ -28,7 +28,7 @@ public sealed class TypeDefinition : ProtocolDefinitionItem
     public int MaxItems { get; set; }
 
     [JsonPropertyName("$ref")]
-    public string TypeReference { get; set; }
+    public string? TypeReference { get; set; }
 
     [JsonPropertyName("optional")]
     [JsonConverter(typeof(BooleanJsonConverter))]
@@ -43,7 +43,7 @@ public sealed class TypeDefinition : ProtocolDefinitionItem
 
         if (!string.IsNullOrWhiteSpace(Name))
         {
-            return Name;
+            return Name!;
         }
 
         return $"Ref: {TypeReference}";

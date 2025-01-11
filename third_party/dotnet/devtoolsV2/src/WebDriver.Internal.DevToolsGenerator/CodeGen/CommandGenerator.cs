@@ -34,7 +34,7 @@ public sealed class CommandGenerator : CodeGeneratorBase<CommandDefinition>
             context = context
         });
 
-        var outputPath = Utility.ReplaceTokensInPath(Settings.DefinitionTemplates.CommandTemplate.OutputPath, className, context, Settings);
+        var outputPath = Utility.ReplaceTokensInPath(Settings.DefinitionTemplates.CommandTemplate.OutputPath!, className, context, Settings);
         result.Add(outputPath, codeResult);
         return result;
     }

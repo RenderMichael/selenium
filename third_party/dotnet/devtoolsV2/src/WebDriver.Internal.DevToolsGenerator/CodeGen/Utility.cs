@@ -1,10 +1,8 @@
 namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
 {
-    using OpenQA.Selenium.Internal.DevToolsGenerator.ProtocolDefinition;
     using System;
     using System.Collections.Generic;
     using System.Text.RegularExpressions;
-    using System.Runtime.InteropServices;
     using OpenQA.Selenium.Internal.DevToolsGenerator.ProtocolDefinition;
 
     /// <summary>
@@ -28,7 +26,7 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
             path = path.Replace("{{className}}", className);
             path = path.Replace("{{rootNamespace}}", settings.RootNamespace);
             path = path.Replace("{{templatePath}}", settings.TemplatesPath);
-            path = path.Replace("{{domainName}}", context.Domain.Name);
+            path = path.Replace("{{domainName}}", context.Domain!.Name);
             path = path.Replace('\\', System.IO.Path.DirectorySeparatorChar);
             path = path.Replace("{{separator}}", System.IO.Path.DirectorySeparatorChar.ToString());
             return path;
@@ -52,12 +50,12 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
             }
 
             string? mappedType = null;
-            if (type.Contains(".") && knownTypes.ContainsKey(type))
+            if (type!.Contains(".") && knownTypes.ContainsKey(type))
             {
                 var typeInfo = knownTypes[type];
                 if (typeInfo.IsPrimitive)
                 {
-                    var primitiveType = typeInfo.TypeName;
+                    var primitiveType = typeInfo.TypeName!;
 
                     if (typeDefinition.Optional && typeInfo.ByRef)
                     {
@@ -103,7 +101,7 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
                 "string" => "string",
                 "object" or "any" => "object",
                 "binary" => "byte[]",
-                "array" => GetTypeMappingForType(typeDefinition.Items, domainDefinition, knownTypes, true),
+                "array" => GetTypeMappingForType(typeDefinition.Items!, domainDefinition, knownTypes, true),
                 _ => throw new InvalidOperationException($"Unmapped data type: {type}"),
             };
 

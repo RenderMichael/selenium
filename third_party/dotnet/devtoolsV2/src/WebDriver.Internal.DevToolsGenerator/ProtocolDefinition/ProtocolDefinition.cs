@@ -7,11 +7,11 @@ public sealed class ProtocolDefinition : IDefinition
 {
     [JsonPropertyName("browserVersion")]
     [JsonRequired]
-    public ProtocolVersionDefinition BrowserVersion { get; set; }
+    public ProtocolVersionDefinition? BrowserVersion { get; set; }
 
     [JsonPropertyName("version")]
     [JsonRequired]
-    public Version Version { get; set; }
+    public Version? Version { get; set; }
 
     [JsonPropertyName("domains")]
     [JsonRequired]

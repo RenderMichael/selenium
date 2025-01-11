@@ -37,7 +37,7 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
                 context = context
             });
 
-            var outputPath = Utility.ReplaceTokensInPath(Settings.DefinitionTemplates.EventTemplate.OutputPath, className, context, Settings);
+            var outputPath = Utility.ReplaceTokensInPath(Settings.DefinitionTemplates.EventTemplate.OutputPath!, className, context, Settings);
             result.Add(outputPath, codeResult);
 
             return result;

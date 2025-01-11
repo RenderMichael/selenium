@@ -33,7 +33,7 @@ public partial class DevToolsGenerator
 
         var protocolDefinitionData = GetProtocolDefinitionData(data);
 
-        var protocolDefinition = protocolDefinitionData.Deserialize<ProtocolDefinition.ProtocolDefinition>(new JsonSerializerOptions() { ReferenceHandler = ReferenceHandler.IgnoreCycles });
+        var protocolDefinition = protocolDefinitionData.Deserialize<ProtocolDefinition.ProtocolDefinition>(new JsonSerializerOptions() { ReferenceHandler = ReferenceHandler.IgnoreCycles })!;
 
         //Begin the code generation process.
         //if (!data.InputSettings.Quiet)

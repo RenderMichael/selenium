@@ -33,7 +33,7 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
         /// <returns></returns>
         public Func<object, string> GetGeneratorForTemplate(CodeGenerationTemplateSettings templateSettings)
         {
-            var templatePath = templateSettings.TemplatePath;
+            var templatePath = templateSettings.TemplatePath!;
             if (m_templateGenerators.TryGetValue(templatePath, out var cachedTemplateFunc))
             {
                 return cachedTemplateFunc;
@@ -126,7 +126,7 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
                     throw new InvalidOperationException("Expected context argument to be non-null.");
                 }
 
-                var mappedType = Utility.GetTypeMappingForType(typeDefinition, codeGenContext.Domain, codeGenContext.KnownTypes);
+                var mappedType = Utility.GetTypeMappingForType(typeDefinition, codeGenContext.Domain!, codeGenContext.KnownTypes!);
                 writer.WriteSafeString(mappedType);
             });
 

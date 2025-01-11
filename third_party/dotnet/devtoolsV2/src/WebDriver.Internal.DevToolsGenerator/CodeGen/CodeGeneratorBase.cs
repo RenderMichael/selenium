@@ -36,5 +36,5 @@ public abstract class CodeGeneratorBase<T> : ICodeGenerator<T>
         m_templatesManager = new Lazy<TemplatesManager>(() => ServiceProvider.GetRequiredService<TemplatesManager>());
     }
 
-    public abstract IDictionary<string, string> GenerateCode(T? item, CodeGeneratorContext? context);
+    public abstract IDictionary<string, string> GenerateCode(T item, CodeGeneratorContext? context);
 }

@@ -8,10 +8,10 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.ProtocolDefinition;
 public sealed class Version : IComparable<Version>
 {
     [JsonPropertyName("major")]
-    public string Major { get; set; }
+    public string? Major { get; set; }
 
     [JsonPropertyName("minor")]
-    public string Minor { get; set; }
+    public string? Minor { get; set; }
 
     public int CompareTo(Version other)
     {

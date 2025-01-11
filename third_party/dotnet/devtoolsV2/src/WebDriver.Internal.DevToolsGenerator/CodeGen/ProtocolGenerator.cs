@@ -18,7 +18,7 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
         {
         }
 
-        public override IDictionary<string, string> GenerateCode(ProtocolDefinition? protocolDefinition, CodeGeneratorContext? context)
+        public override IDictionary<string, string> GenerateCode(ProtocolDefinition protocolDefinition, CodeGeneratorContext? context)
         {
             if (string.IsNullOrWhiteSpace(Settings.TemplatesPath))
             {
@@ -89,7 +89,7 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
             {
                 var includeCodeGenerator = TemplatesManager.GetGeneratorForTemplate(include);
                 var includeCodeResult = includeCodeGenerator(includeData);
-                result.Add(include.OutputPath, includeCodeResult);
+                result.Add(include.OutputPath!, includeCodeResult);
             }
 
             //Generate code for each domain, type, command, event from their respective templates.
@@ -162,7 +162,7 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
                             break;
                         case "array":
                             if ((type.Items == null || string.IsNullOrWhiteSpace(type.Items.Type)) &&
-                                type.Items.TypeReference != "StringIndex" && type.Items.TypeReference != "FilterEntry")
+                                type.Items!.TypeReference != "StringIndex" && type.Items.TypeReference != "FilterEntry")
                             {
                                 throw new NotImplementedException("Did not expect a top-level domain array type to specify a TypeReference");
                             }
