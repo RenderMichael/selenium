@@ -1,0 +1,19 @@
+using System.Collections.ObjectModel;
+using System.Text.Json.Serialization;
+
+namespace OpenQA.Selenium.Internal.DevToolsGenerator.ProtocolDefinition;
+
+public sealed class ProtocolDefinition : IDefinition
+{
+    [JsonPropertyName("browserVersion")]
+    [JsonRequired]
+    public ProtocolVersionDefinition BrowserVersion { get; set; }
+
+    [JsonPropertyName("version")]
+    [JsonRequired]
+    public Version Version { get; set; }
+
+    [JsonPropertyName("domains")]
+    [JsonRequired]
+    public ICollection<DomainDefinition> Domains { get; set; } = new Collection<DomainDefinition>();
+}
