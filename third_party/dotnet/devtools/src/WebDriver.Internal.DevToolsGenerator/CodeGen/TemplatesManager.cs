@@ -15,6 +15,15 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
     /// </summary>
     public sealed class TemplatesManager
     {
+        public sealed class TemplateFileNotFoundException : FileNotFoundException
+        {
+            public TemplateFileNotFoundException(string message, string filePath) : base(message)
+            {
+                FilePath = filePath;
+            }
+
+            public string FilePath { get; }
+        }
         private readonly Dictionary<AdditionalText, Func<object, string>> m_templateGenerators = new Dictionary<AdditionalText, Func<object, string>>();
 
         /// <summary>
@@ -49,7 +58,7 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
 
             if (templateFile is null)
             {
-                throw new FileNotFoundException($"Unable to locate a template at {templatePath} - please ensure that a template file exists at this location.");
+                throw new TemplateFileNotFoundException($"Unable to locate a template at {templatePath} - please ensure that a template file exists at this location.", templatePath);
             }
 
             var templateContents = templateFile.GetText()?.ToString() ?? throw new IOException($"TemplatesManager - Unable to read from file {templateFile.Path}");

@@ -10,11 +10,6 @@ public partial class DevToolsGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        if (!Debugger.IsAttached)
-        {
-            Debugger.Launch();
-        }
-
         IncrementalValueProvider<GeneratorSettings> settingsProvider = context.AnalyzerConfigOptionsProvider.Select(static (options, _) =>
         {
             var devGenSettings = new GeneratorSettings

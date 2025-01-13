@@ -75,8 +75,14 @@
       <OutputItemType>Analyzer</OutputItemType>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-  </ItemGroup> 
+  </ItemGroup>
 
+  <ItemGroup>
+    <AdditionalFiles Include="./../../../common/devtools/browser_protocol.json" />
+    <AdditionalFiles Include="./../../../common/devtools/js_protocol.json" />
+    <AdditionalFiles Include="./cdp/Templates/*" />
+  </ItemGroup>
+  
   <Target Name="GenerateSeleniumManagerBinaries" BeforeTargets="PrepareForBuild">
     <Exec Command="bazel build //dotnet/src/webdriver:manager-linux //dotnet/src/webdriver:manager-windows //dotnet/src/webdriver:manager-macos" WorkingDirectory="../../.." />
 
@@ -115,9 +121,9 @@
   <Target Name="GenerateCdp" BeforeTargets="CoreCompile">
     <Exec Command="bazel build //dotnet/src/webdriver/cdp/..." WorkingDirectory="../../.." />
 
-    <ItemGroup>
+    <!--<ItemGroup>
       <Compile Include="..\..\..\bazel-bin\dotnet\src\webdriver\cdp\**\*.cs" LinkBase="DevTools\generated" />
-    </ItemGroup>
+    </ItemGroup>-->
   </Target>
 
 </Project>

@@ -5,6 +5,9 @@ using OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using OpenQA.Selenium.Internal.DevToolsGenerator.ProtocolDefinition;
+using System.Text.Json.Nodes;
+using System.Diagnostics;
 
 namespace OpenQA.Selenium.Internal.DevToolsGenerator;
 
@@ -12,6 +15,11 @@ public partial class DevToolsGenerator
 {
     private static void Execute(SourceProductionContext source, GatheredData data)
     {
+        if (!Debugger.IsAttached)
+        {
+            // Debugger.Launch();
+        }
+
         if (data.Diagnostic is not null)
         {
             source.ReportDiagnostic(data.Diagnostic);
@@ -43,8 +51,16 @@ public partial class DevToolsGenerator
 
         var protocolGenerator = serviceProvider.GetRequiredService<ICodeGenerator<ProtocolDefinition.ProtocolDefinition>>();
 
-        var codeFiles = protocolGenerator.GenerateCode(protocolDefinition, null);
-
+        IDictionary<string, string> codeFiles;
+        try
+        {
+            codeFiles = protocolGenerator.GenerateCode(protocolDefinition, null);
+        }
+        catch (TemplatesManager.TemplateFileNotFoundException ex)
+        {
+            source.ReportDiagnostic(Diagnostic.Create(new DiagnosticDescriptor("WebDriver1005", "Template file missing", "Unable to locate a template at {0} - please ensure that a template file exists at this location.", "WebDriver", Severity, isEnabledByDefault: true), Location.None, ex.FilePath));
+            return;
+        }
         //Delete the output folder if force is specified and it exists...
         //if (!data.InputSettings.Quiet)
         //{
@@ -53,7 +69,7 @@ public partial class DevToolsGenerator
 
         foreach (var codeFile in codeFiles)
         {
-            var targetFilePath = Path.Combine(data.InputSettings.OutputPath, codeFile.Key);
+            string targetFilePath = Path.Combine(/*data.InputSettings.OutputPath, */codeFile.Key);
             source.AddSource(targetFilePath, SourceText.From(codeFile.Value, Encoding.UTF8));
         }
 
@@ -62,5 +78,66 @@ public partial class DevToolsGenerator
         //{
         //    Console.WriteLine("All done!");
         //}
+    }
+
+    public static JsonObject GetProtocolDefinitionData(GatheredData args)
+    {
+        AdditionalText? browserProtocolPath = args.BrowserProtocolFile;
+        if (args.BrowserProtocolFile is null)
+        {
+            browserProtocolPath = args.BrowserProtocolFile = args.AllFiles.GetByPath(Path.Combine(args.InputSettings.BrowserProtocolPath));
+            if (args.BrowserProtocolFile is null)
+            {
+                // TODO
+            }
+        }
+
+        AdditionalText? jsProtocolPath = args.JsProtocolFile;
+        if (args.JsProtocolFile is null)
+        {
+            jsProtocolPath = args.JsProtocolFile = args.AllFiles.GetByPath(Path.Combine(args.InputSettings.JavaScriptProtocolPath, "js_protocol.json"));
+
+            if (args.JsProtocolFile is null)
+            {
+                // TODO
+            }
+        }
+
+        JsonObject? browserProtocol = browserProtocolPath?.GetText()?.ToString() is string browserProtocolString ? JsonNode.Parse(browserProtocolString) as JsonObject : null;
+        JsonObject? jsProtocol = jsProtocolPath?.GetText()?.ToString() is string jsProtocolString ? JsonNode.Parse(jsProtocolString) as JsonObject : null;
+
+        ProtocolVersionDefinition currentVersion = new ProtocolVersionDefinition();
+        currentVersion.ProtocolVersion = "1.3";
+        currentVersion.Browser = "Chrome/86.0";
+
+        JsonObject protocolData = MergeJavaScriptProtocolDefinitions(browserProtocol, jsProtocol);
+        protocolData["browserVersion"] = JsonSerializer.SerializeToNode(currentVersion);
+
+        return protocolData;
+    }
+
+    /// <summary>
+    /// Merges a browserProtocol and jsProtocol into a single protocol definition.
+    /// </summary>
+    /// <param name="browserProtocol"></param>
+    /// <param name="jsProtocol"></param>
+    /// <returns></returns>
+    public static JsonObject MergeJavaScriptProtocolDefinitions(JsonObject? browserProtocol, JsonObject? jsProtocol)
+    {
+        //Merge the 2 protocols together.
+        if (jsProtocol!["version"]!["majorVersion"] != browserProtocol!["version"]!["majorVersion"] ||
+            jsProtocol!["version"]!["minorVersion"] != browserProtocol!["version"]!["minorVersion"])
+        {
+            throw new InvalidOperationException("Protocol mismatch -- The WebKit and V8 protocol versions should match.");
+        }
+
+        var result = browserProtocol.DeepClone().AsObject();
+        foreach (var domain in jsProtocol["domains"]!.AsArray())
+        {
+            JsonArray jDomains = result["domains"]!.AsArray();
+            jDomains.Add(domain!.DeepClone());
+        }
+
+        return result;
     }
 }

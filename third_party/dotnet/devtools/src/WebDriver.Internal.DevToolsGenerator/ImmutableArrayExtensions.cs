@@ -12,12 +12,9 @@ public static class ImmutableArrayExtensions
             throw new ArgumentNullException(nameof(path));
         }
 
-        path = Path.GetFullPath(path);
         foreach (AdditionalText file in files)
         {
-            string thisPath = Path.GetFullPath(file.Path);
-
-            if (string.Equals(thisPath, path, StringComparison.Ordinal))
+            if (string.Equals(Path.GetFileName(file.Path), Path.GetFileName(path), StringComparison.Ordinal))
             {
                 return file;
             }
