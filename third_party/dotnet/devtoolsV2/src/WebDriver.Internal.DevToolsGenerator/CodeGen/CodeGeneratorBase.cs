@@ -11,7 +11,7 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen;
 public abstract class CodeGeneratorBase<T> : ICodeGenerator<T>
     where T : class, IDefinition
 {
-    private readonly Lazy<CodeGenerationSettings> m_settings;
+    private readonly Lazy<GatheredDataService> m_settings;
     private readonly Lazy<TemplatesManager> m_templatesManager;
 
     /// <summary>
@@ -22,7 +22,9 @@ public abstract class CodeGeneratorBase<T> : ICodeGenerator<T>
     /// <summary>
     /// Gets the code generation settings associated with the generator.
     /// </summary>
-    public CodeGenerationSettings Settings => m_settings.Value;
+    public GatheredDataService Data => m_settings.Value;
+
+    public CodeGenerationSettings Settings => Data.Data.GenerationSettings;
 
     /// <summary>
     /// Gets a template manager associated with the generator.
@@ -32,7 +34,7 @@ public abstract class CodeGeneratorBase<T> : ICodeGenerator<T>
     protected CodeGeneratorBase(IServiceProvider serviceProvider)
     {
         ServiceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-        m_settings = new Lazy<CodeGenerationSettings>(() => ServiceProvider.GetRequiredService<CodeGenerationSettings>());
+        m_settings = new Lazy<GatheredDataService>(() => ServiceProvider.GetRequiredService<GatheredDataService>());
         m_templatesManager = new Lazy<TemplatesManager>(() => ServiceProvider.GetRequiredService<TemplatesManager>());
     }
 

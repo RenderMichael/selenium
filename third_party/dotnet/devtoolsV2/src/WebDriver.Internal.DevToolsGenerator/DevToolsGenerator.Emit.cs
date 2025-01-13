@@ -22,7 +22,7 @@ public partial class DevToolsGenerator
 
         // setup our DI
         var serviceProvider = new ServiceCollection()
-            .AddCodeGenerationServices(data.GenerationSettings)
+            .AddCodeGenerationServices(new GatheredDataService(data))
             .BuildServiceProvider();
 
         //Get the protocol Data.

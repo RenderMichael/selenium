@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis;
 
 using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace OpenQA.Selenium.Internal.DevToolsGenerator;
 
@@ -9,6 +10,11 @@ public partial class DevToolsGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
+        if (!Debugger.IsAttached)
+        {
+            Debugger.Launch();
+        }
+
         IncrementalValueProvider<GeneratorSettings> settingsProvider = context.AnalyzerConfigOptionsProvider.Select(static (options, _) =>
         {
             var devGenSettings = new GeneratorSettings
@@ -26,7 +32,10 @@ public partial class DevToolsGenerator : IIncrementalGenerator
             return devGenSettings;
         }).WithTrackingName("Settings");
 
-        IncrementalValueProvider<ImmutableArray<AdditionalText>> additionalTexts = context.AdditionalTextsProvider.Collect().WithTrackingName("Files");
+        IncrementalValueProvider<ImmutableArray<AdditionalText>> additionalTexts = context.AdditionalTextsProvider.Select((file, ct) =>
+        {
+            return file;
+        }).Collect().WithTrackingName("Files");
 
         IncrementalValueProvider<GatheredData> parsedFiles = additionalTexts.Combine(settingsProvider).Select(GatherData).WithTrackingName("Data");
         context.RegisterSourceOutput(parsedFiles, Execute);

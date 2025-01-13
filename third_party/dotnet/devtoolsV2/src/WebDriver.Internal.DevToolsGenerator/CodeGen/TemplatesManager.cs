@@ -8,20 +8,21 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
     using System.Linq;
     using System.Text;
     using OpenQA.Selenium.Internal.DevToolsGenerator.ProtocolDefinition;
+    using Microsoft.CodeAnalysis;
 
     /// <summary>
     /// Represents a class that manages templates and their associated generators.
     /// </summary>
     public sealed class TemplatesManager
     {
-        private readonly IDictionary<string, Func<object, string>> m_templateGenerators = new Dictionary<string, Func<object, string>>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<AdditionalText, Func<object, string>> m_templateGenerators = new Dictionary<AdditionalText, Func<object, string>>();
 
         /// <summary>
         /// Gets the code generation settings associated with the protocol generator
         /// </summary>
-        public CodeGenerationSettings Settings { get; }
+        public GatheredDataService Settings { get; }
 
-        public TemplatesManager(CodeGenerationSettings settings)
+        public TemplatesManager(GatheredDataService settings)
         {
             Settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
@@ -34,23 +35,24 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
         public Func<object, string> GetGeneratorForTemplate(CodeGenerationTemplateSettings templateSettings)
         {
             var templatePath = templateSettings.TemplatePath!;
-            if (m_templateGenerators.TryGetValue(templatePath, out var cachedTemplateFunc))
+
+            AdditionalText? templateFile = Settings.Data.TemplatesFile ?? Settings.Data.AllFiles.GetByPath(templatePath);
+            if (templateFile is not null && m_templateGenerators.TryGetValue(templateFile, out var cachedTemplateFunc))
             {
                 return cachedTemplateFunc;
             }
 
-            var targetTemplate = templatePath;
-            if (!Path.IsPathRooted(targetTemplate))
+            if (templateFile is null && !Path.IsPathRooted(templatePath))
             {
-                targetTemplate = Path.Combine(Settings.TemplatesPath, targetTemplate);
+                templateFile = Settings.Data.AllFiles.GetByPath(Path.Combine(Settings.Data.GenerationSettings.TemplatesPath, templatePath));
             }
 
-            if (!File.Exists(targetTemplate))
+            if (templateFile is null)
             {
-                throw new FileNotFoundException($"Unable to locate a template at {targetTemplate} - please ensure that a template file exists at this location.");
+                throw new FileNotFoundException($"Unable to locate a template at {templatePath} - please ensure that a template file exists at this location.");
             }
 
-            var templateContents = File.ReadAllText(targetTemplate);
+            var templateContents = templateFile.GetText()?.ToString() ?? throw new IOException($"TemplatesManager - Unable to read from file {templateFile.Path}");
 
             Handlebars.RegisterHelper("dehumanize", (writer, context, arguments) =>
             {

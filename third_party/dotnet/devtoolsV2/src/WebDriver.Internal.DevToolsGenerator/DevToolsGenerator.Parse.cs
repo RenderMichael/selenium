@@ -125,8 +125,8 @@ public partial class DevToolsGenerator
             }
         }
 
-        JsonObject? browserProtocol = browserProtocolPath?.GetText()?.ToString() is string browserProtocolString ? JsonObject.Parse(browserProtocolString) as JsonObject : null;
-        JsonObject? jsProtocol = jsProtocolPath?.GetText()?.ToString() is string jsProtocolString ? JsonObject.Parse(jsProtocolString) as JsonObject : null;
+        JsonObject? browserProtocol = browserProtocolPath?.GetText()?.ToString() is string browserProtocolString ? JsonNode.Parse(browserProtocolString) as JsonObject : null;
+        JsonObject? jsProtocol = jsProtocolPath?.GetText()?.ToString() is string jsProtocolString ? JsonNode.Parse(jsProtocolString) as JsonObject : null;
 
         ProtocolVersionDefinition currentVersion = new ProtocolVersionDefinition();
         currentVersion.ProtocolVersion = "1.3";
@@ -147,16 +147,16 @@ public partial class DevToolsGenerator
     public static JsonObject MergeJavaScriptProtocolDefinitions(JsonObject? browserProtocol, JsonObject? jsProtocol)
     {
         //Merge the 2 protocols together.
-        if (jsProtocol["version"]["majorVersion"] != browserProtocol["version"]["majorVersion"] ||
-            jsProtocol["version"]["minorVersion"] != browserProtocol["version"]["minorVersion"])
+        if (jsProtocol!["version"]!["majorVersion"] != browserProtocol!["version"]!["majorVersion"] ||
+            jsProtocol!["version"]!["minorVersion"] != browserProtocol!["version"]!["minorVersion"])
         {
             throw new InvalidOperationException("Protocol mismatch -- The WebKit and V8 protocol versions should match.");
         }
 
         var result = browserProtocol.DeepClone().AsObject();
-        foreach (var domain in jsProtocol["domains"].AsArray())
+        foreach (var domain in jsProtocol["domains"]!.AsArray())
         {
-            JsonArray jDomains = result["domains"].AsArray();
+            JsonArray jDomains = result["domains"]!.AsArray();
             jDomains.Add(domain);
         }
 

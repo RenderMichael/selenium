@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2026
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35617.110
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebDriver", "src\webdriver\WebDriver.csproj", "{ACCB2D1E-E2C9-4AC1-8EE3-6BF1C30AD713}"
 EndProject
@@ -22,6 +22,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebDriver.Safari.Tests", "test\safari\WebDriver.Safari.Tests.csproj", "{BB08F673-1553-4A56-882A-A2A115AC06C2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebDriver.Support.Tests", "test\support\WebDriver.Support.Tests.csproj", "{2136C695-2526-45E0-AE1D-68FBBC6A9DE2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDriver.Internal.DevToolsGeneratorV2", "..\third_party\dotnet\devtoolsV2\src\WebDriver.Internal.DevToolsGenerator\WebDriver.Internal.DevToolsGeneratorV2.csproj", "{C842E9CF-AE41-A48D-CC02-A2CD90964D31}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +71,10 @@ Global
 		{2136C695-2526-45E0-AE1D-68FBBC6A9DE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2136C695-2526-45E0-AE1D-68FBBC6A9DE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2136C695-2526-45E0-AE1D-68FBBC6A9DE2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C842E9CF-AE41-A48D-CC02-A2CD90964D31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C842E9CF-AE41-A48D-CC02-A2CD90964D31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C842E9CF-AE41-A48D-CC02-A2CD90964D31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C842E9CF-AE41-A48D-CC02-A2CD90964D31}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
