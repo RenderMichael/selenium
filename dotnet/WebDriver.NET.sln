@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebDriver.Safari.Tests", "t
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebDriver.Support.Tests", "test\support\WebDriver.Support.Tests.csproj", "{2136C695-2526-45E0-AE1D-68FBBC6A9DE2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDriver.Internal.DevToolsGeneratorV2", "..\third_party\dotnet\devtoolsV2\src\WebDriver.Internal.DevToolsGenerator\WebDriver.Internal.DevToolsGeneratorV2.csproj", "{C842E9CF-AE41-A48D-CC02-A2CD90964D31}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDriver.Internal.DevToolsGeneratorV2", "..\third_party\dotnet\devtools\src\WebDriver.Internal.DevToolsGenerator\WebDriver.Internal.DevToolsGeneratorV2.csproj", "{9CAF885A-8ED9-F046-6A7B-B29C01633403}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -71,10 +71,10 @@ Global
 		{2136C695-2526-45E0-AE1D-68FBBC6A9DE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2136C695-2526-45E0-AE1D-68FBBC6A9DE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2136C695-2526-45E0-AE1D-68FBBC6A9DE2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C842E9CF-AE41-A48D-CC02-A2CD90964D31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C842E9CF-AE41-A48D-CC02-A2CD90964D31}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C842E9CF-AE41-A48D-CC02-A2CD90964D31}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C842E9CF-AE41-A48D-CC02-A2CD90964D31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CAF885A-8ED9-F046-6A7B-B29C01633403}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CAF885A-8ED9-F046-6A7B-B29C01633403}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CAF885A-8ED9-F046-6A7B-B29C01633403}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CAF885A-8ED9-F046-6A7B-B29C01633403}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

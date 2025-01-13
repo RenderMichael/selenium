@@ -10,13 +10,18 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator;
 
 public partial class DevToolsGenerator
 {
+    const DiagnosticSeverity Severity = DiagnosticSeverity.Warning; // TODO change to Error when relying on this generator in build
     private static GatheredData GatherData((ImmutableArray<AdditionalText> Left, GeneratorSettings Right) data, CancellationToken ct)
     {
         var (files, settings) = data;
 
         settings.BrowserProtocolPath = Path.GetFullPath(settings.BrowserProtocolPath);
         settings.JavaScriptProtocolPath = Path.GetFullPath(settings.JavaScriptProtocolPath);
-        settings.TemplatesPath = Path.GetFullPath(settings.TemplatesPath);
+        try // TODO remove the exception catching
+        {
+            settings.TemplatesPath = Path.GetFullPath(settings.TemplatesPath);
+        }
+        catch (ArgumentException) { }
         settings.Settings = Path.GetFullPath(settings.Settings);
 
         AdditionalText? browserProtocolFile = null;
@@ -45,7 +50,7 @@ public partial class DevToolsGenerator
         }
         if (settingsFile is null)
         {
-            var diagnostic = Diagnostic.Create(new DiagnosticDescriptor("WebDriver1001", "The specified settings file could not be found", "The specified settings file ({0}) could not be found. Please check that the settings file exists.", "WebDriver", DiagnosticSeverity.Error, true), Location.None, settings.Settings);
+            var diagnostic = Diagnostic.Create(new DiagnosticDescriptor("WebDriver1001", "The specified settings file could not be found", "The specified settings file ({0}) could not be found. Please check that the settings file exists.", "WebDriver", Severity, true), Location.None, settings.Settings);
 
             return GatheredData.FromDiagnostic(diagnostic);
         }
@@ -54,7 +59,7 @@ public partial class DevToolsGenerator
 
         if (settingsText is null)
         {
-            var diagnostic = Diagnostic.Create(new DiagnosticDescriptor("WebDriver1002", "The specified settings file could not be read", "The specified settings file ({0}) could not be read. Please check that the settings file exists.", "WebDriver", DiagnosticSeverity.Error, true), Location.None, settings.Settings);
+            var diagnostic = Diagnostic.Create(new DiagnosticDescriptor("WebDriver1002", "The specified settings file could not be read", "The specified settings file ({0}) could not be read. Please check that the settings file exists.", "WebDriver", Severity, true), Location.None, settings.Settings);
 
             return GatheredData.FromDiagnostic(diagnostic);
         }
@@ -72,7 +77,7 @@ public partial class DevToolsGenerator
 
         if (generationSettings is null)
         {
-            var diagnostic = Diagnostic.Create(new DiagnosticDescriptor("WebDriver1003", "The specified settings file contains invalid JSON", "The specified settings file ({0}) contains invalid JSON. Please check that the settings file is accurate.", "WebDriver", DiagnosticSeverity.Error, true), Location.None, settings.Settings);
+            var diagnostic = Diagnostic.Create(new DiagnosticDescriptor("WebDriver1003", "The specified settings file contains invalid JSON", "The specified settings file ({0}) contains invalid JSON. Please check that the settings file is accurate.", "WebDriver", Severity, true), Location.None, settings.Settings);
 
             return GatheredData.FromDiagnostic(diagnostic);
         }
