@@ -13,7 +13,7 @@ public sealed class CommandGenerator : CodeGeneratorBase<CommandDefinition>
     {
     }
 
-    public override IDictionary<string, string> GenerateCode(CommandDefinition commandDefinition, CodeGeneratorContext? context)
+    public override IDictionary<string, string> GenerateCode(CommandDefinition commandDefinition, CodeGeneratorContext? context, string versionString)
     {
         var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -30,11 +30,11 @@ public sealed class CommandGenerator : CodeGeneratorBase<CommandDefinition>
             command = commandDefinition,
             className = className,
             domain = context!.Domain,
-            rootNamespace = Settings.RootNamespace,
+            rootNamespace = Settings.RootNamespace + "." + versionString,
             context = context
         });
 
-        var outputPath = Utility.ReplaceTokensInPath(Settings.DefinitionTemplates.CommandTemplate.OutputPath!, className, context, Settings);
+        var outputPath = Utility.ReplaceTokensInPath(Settings.DefinitionTemplates.CommandTemplate.OutputPath!, className, context, Settings, versionString);
         result.Add(outputPath, codeResult);
         return result;
     }

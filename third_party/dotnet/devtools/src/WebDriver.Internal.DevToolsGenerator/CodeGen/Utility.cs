@@ -21,10 +21,15 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
         /// <param name="context"></param>
         /// <param name="settings"></param>
         /// <returns></returns>
-        public static string ReplaceTokensInPath(string path, string className, CodeGeneratorContext context, CodeGenerationSettings settings)
+        public static string ReplaceTokensInPath(string path, string className, CodeGeneratorContext context, CodeGenerationSettings settings, string versionString)
         {
+            if (versionString is null)
+            {
+                throw new ArgumentNullException(nameof(versionString));
+            }
+
             path = path.Replace("{{className}}", className);
-            path = path.Replace("{{rootNamespace}}", settings.RootNamespace);
+            path = path.Replace("{{rootNamespace}}", settings.RootNamespace + "." + versionString);
             path = path.Replace("{{templatePath}}", settings.TemplatesPath);
             path = path.Replace("{{domainName}}", context.Domain!.Name);
             path = path.Replace('\\', Path.DirectorySeparatorChar);

@@ -18,7 +18,7 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
         {
         }
 
-        public override IDictionary<string, string> GenerateCode(ProtocolDefinition protocolDefinition, CodeGeneratorContext? context)
+        public override IDictionary<string, string> GenerateCode(ProtocolDefinition protocolDefinition, CodeGeneratorContext? context, string versionString)
         {
             if (string.IsNullOrWhiteSpace(Settings.TemplatesPath))
             {
@@ -75,7 +75,7 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
             {
                 chromeVersion = protocolDefinition.BrowserVersion,
                 runtimeVersion = Settings.RuntimeVersion,
-                rootNamespace = Settings.RootNamespace,
+                rootNamespace = Settings.RootNamespace + "." + versionString,
                 domains = domains,
                 commands = commands,
                 events = events,
@@ -93,7 +93,7 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
             }
 
             //Generate code for each domain, type, command, event from their respective templates.
-            GenerateCode(domains, types)
+            GenerateCode(domains, types, versionString)
                 .ToList()
                 .ForEach(x => result.Add(x.Key, x.Value));
 
@@ -246,7 +246,7 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
             return knownTypes;
         }
 
-        private IDictionary<string, string> GenerateCode(ICollection<DomainDefinition> domains, Dictionary<string, TypeInfo> knownTypes)
+        private IDictionary<string, string> GenerateCode(ICollection<DomainDefinition> domains, Dictionary<string, TypeInfo> knownTypes, string versionString)
         {
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -255,7 +255,7 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
             //Generate types/events/commands for all domains.
             foreach (var domain in domains)
             {
-                domainGenerator.GenerateCode(domain, new CodeGeneratorContext(domain, knownTypes))
+                domainGenerator.GenerateCode(domain, new CodeGeneratorContext(domain, knownTypes), versionString)
                     .ToList()
                     .ForEach(x => result.Add(x.Key, x.Value));
             }

@@ -45,7 +45,7 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
         {
             var templatePath = templateSettings.TemplatePath!;
 
-            AdditionalText? templateFile = Settings.Data.TemplatesFile ?? Settings.Data.AllFiles.GetByPath(templatePath);
+            AdditionalText? templateFile = Settings.Data.AllFiles.GetByPath(templatePath);
             if (templateFile is not null && m_templateGenerators.TryGetValue(templateFile, out var cachedTemplateFunc))
             {
                 return cachedTemplateFunc;

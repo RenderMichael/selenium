@@ -6,14 +6,13 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator
 {
     public record struct GatheredData(
         GeneratorSettings InputSettings,
-        AdditionalText? BrowserProtocolFile,
-        AdditionalText? JsProtocolFile,
-        AdditionalText? TemplatesFile,
+        Dictionary<string, ImmutableArray<AdditionalText>> VersionToTexts,
         AdditionalText? SettingsFile,
-        Diagnostic? Diagnostic,
+        Diagnostic? ErrorDiagnostic,
         CodeGenerationSettings GenerationSettings,
-        ImmutableArray<AdditionalText> AllFiles)
+        ImmutableArray<AdditionalText> AllFiles,
+        List<Diagnostic> InfoDiagnostics)
     {
-        public static GatheredData FromDiagnostic(Diagnostic diag) => default(GatheredData) with { Diagnostic = diag };
+        public static GatheredData FromDiagnostic(Diagnostic diag) => default(GatheredData) with { ErrorDiagnostic = diag };
     }
 }

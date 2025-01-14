@@ -15,7 +15,7 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
         {
         }
 
-        public override IDictionary<string, string> GenerateCode(EventDefinition eventDefinition, CodeGeneratorContext? context)
+        public override IDictionary<string, string> GenerateCode(EventDefinition eventDefinition, CodeGeneratorContext? context, string versionString)
         {
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -33,11 +33,11 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
                 @event = eventDefinition,
                 className = className,
                 domain = context!.Domain,
-                rootNamespace = Settings.RootNamespace,
+                rootNamespace = Settings.RootNamespace + "." + versionString,
                 context = context
             });
 
-            var outputPath = Utility.ReplaceTokensInPath(Settings.DefinitionTemplates.EventTemplate.OutputPath!, className, context, Settings);
+            var outputPath = Utility.ReplaceTokensInPath(Settings.DefinitionTemplates.EventTemplate.OutputPath!, className, context, Settings, versionString);
             result.Add(outputPath, codeResult);
 
             return result;

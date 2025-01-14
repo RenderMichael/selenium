@@ -21,65 +21,72 @@ public partial class DevToolsGenerator
 
         var (files, settings) = data;
 
-        AdditionalText? browserProtocolFile = null;
-        AdditionalText? jsProtocolFile = null;
-        AdditionalText? templatesFile = null;
+        List<Diagnostic> diagnostic = new();
+        var versionToTexts = new Dictionary<string, ImmutableArray<AdditionalText>>(StringComparer.Ordinal);
+
         AdditionalText? settingsFile = null;
         foreach (AdditionalText file in files)
         {
-            string fullPath = Path.GetFileName(file.Path);
-            if (fullPath == Path.GetFileName(settings.BrowserProtocolPath))
-            {
-                browserProtocolFile = file;
-            }
-            else if (fullPath == Path.GetFileName(settings.JavaScriptProtocolPath))
-            {
-                jsProtocolFile = file;
-            }
-            else if (fullPath == Path.GetFileName(settings.TemplatesPath))
-            {
-                templatesFile = file;
-            }
-            else if (fullPath == Path.GetFileName(settings.Settings))
+            string fileName = Path.GetFileName(file.Path);
+            if (fileName == Path.GetFileName(settings.Settings))
             {
                 settingsFile = file;
+                continue;
             }
+
+            int versionPathIndex = file.Path.IndexOf("chromium");
+            if (versionPathIndex >= 0)
+            {
+                if (!Debugger.IsAttached)
+                {
+                    //     Debugger.Launch();
+                }
+
+                ReadOnlySpan<char> localPath = file.Path.AsSpan(versionPathIndex + "chromium".Length + 1);
+                int secondSlash = localPath.IndexOf('\\');
+                if (secondSlash >= 0)
+                {
+                    string versionString = localPath.Slice(0, secondSlash).ToString();
+                    if (versionToTexts.TryGetValue(versionString, out var existingList))
+                    {
+                        versionToTexts[versionString] = existingList.Add(file);
+                    }
+                    else
+                    {
+                        versionToTexts.Add(versionString, [file]);
+                    }
+
+                    continue;
+                }
+            }
+
+            diagnostic.Add(Diagnostic.Create(new DiagnosticDescriptor("WebDriver1001", "Unused file", "The specified file ({0}) was unused. Please check that the file is necessary.", "WebDriver", DiagnosticSeverity.Warning, true), Location.None, file.Path));
         }
-        if (settingsFile is null)
-        {
-            var diagnostic = Diagnostic.Create(new DiagnosticDescriptor("WebDriver1001", "The specified settings file could not be found", "The specified settings file ({0}) could not be found. Please check that the settings file exists.", "WebDriver", Severity, true), Location.None, settings.Settings);
 
-            return GatheredData.FromDiagnostic(diagnostic);
-        }
-
-        SourceText? settingsText = settingsFile.GetText(ct);
-
+        SourceText? settingsText = settingsFile?.GetText(ct);
         if (settingsText is null)
         {
-            var diagnostic = Diagnostic.Create(new DiagnosticDescriptor("WebDriver1002", "The specified settings file could not be read", "The specified settings file ({0}) could not be read. Please check that the settings file exists.", "WebDriver", Severity, true), Location.None, settings.Settings);
+            var diag = Diagnostic.Create(new DiagnosticDescriptor("WebDriver1002", "The specified settings file could not be read", "The specified settings file ({0}) could not be read. Please check that the settings file exists.", "WebDriver", Severity, true), Location.None, settings.Settings);
 
-            return GatheredData.FromDiagnostic(diagnostic);
+            return GatheredData.FromDiagnostic(diag);
         }
 
         CodeGenerationSettings? generationSettings;
         try
         {
-            generationSettings = JsonSerializer.Deserialize<CodeGenerationSettings>(settingsText.ToString());
+            generationSettings = JsonSerializer.Deserialize<CodeGenerationSettings>(settingsText.ToString())
+                ?? throw new JsonException("Value was null");
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
-            generationSettings = null;
-        }
+            var diag = Diagnostic.Create(new DiagnosticDescriptor("WebDriver1003", "The specified settings file must contain a JSON object", "The specified settings file ({0}) must contain a JSON object. Failed with message '{1}'.", "WebDriver", Severity, true), Location.None, settings.Settings, ex.Message);
 
-        if (generationSettings is null)
-        {
-            var diagnostic = Diagnostic.Create(new DiagnosticDescriptor("WebDriver1003", "The specified settings file must contain a JSON object", "The specified settings file ({0}) must contain a JSON object. Please check that the settings file is accurate.", "WebDriver", Severity, true), Location.None, settings.Settings);
-
-            return GatheredData.FromDiagnostic(diagnostic);
+            return GatheredData.FromDiagnostic(diag);
         }
 
         if (!string.IsNullOrEmpty(settings.TemplatesPath))
         {
+            // TODO is this entire if block necessary?
             generationSettings.TemplatesPath = settings.TemplatesPath;
 
             var foundTemplate = files.FirstOrDefault(file => file.Path == Path.GetFullPath(settings.TemplatesPath));
@@ -89,17 +96,19 @@ public partial class DevToolsGenerator
             }
         }
 
-        return new GatheredData(settings, browserProtocolFile, jsProtocolFile, templatesFile, settingsFile, null, generationSettings, files);
-
-        static string GetParentDirectory(string childPath)
-        {
-            var lastSlash = childPath.LastIndexOfAny(['/', '\\']);
-            if (lastSlash < 0)
-            {
-                throw new InvalidOperationException("Cannot get parent of root");
-            }
-
-            return childPath.Substring(0, lastSlash);
-        }
+        return new GatheredData(settings, versionToTexts, settingsFile, null, generationSettings, files, diagnostic);
     }
+
+    private static string GetParentDirectory(string childPath)
+    {
+        var lastSlash = childPath.LastIndexOfAny(PathSeparatorChars);
+        if (lastSlash < 0)
+        {
+            throw new InvalidOperationException("Cannot get parent of root");
+        }
+
+        return childPath.Substring(0, lastSlash);
+    }
+
+    private static readonly char[] PathSeparatorChars = ['/', '\\'];
 }

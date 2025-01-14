@@ -17,14 +17,14 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
         {
         }
 
-        public override IDictionary<string, string> GenerateCode(DomainDefinition domainDefinition, CodeGeneratorContext? context)
+        public override IDictionary<string, string> GenerateCode(DomainDefinition domainDefinition, CodeGeneratorContext? context, string versionString)
         {
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             var typeGenerator = ServiceProvider.GetRequiredService<ICodeGenerator<TypeDefinition>>();
             foreach (var type in domainDefinition.Types)
             {
-                typeGenerator.GenerateCode(type, context)
+                typeGenerator.GenerateCode(type, context, versionString)
                     .ToList()
                     .ForEach(x => result.Add(x.Key, x.Value));
             }
@@ -32,7 +32,7 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
             var eventGenerator = ServiceProvider.GetRequiredService<ICodeGenerator<EventDefinition>>();
             foreach (var @event in domainDefinition.Events)
             {
-                eventGenerator.GenerateCode(@event, context)
+                eventGenerator.GenerateCode(@event, context, versionString)
                     .ToList()
                     .ForEach(x => result.Add(x.Key, x.Value));
             }
@@ -40,7 +40,7 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
             var commandGenerator = ServiceProvider.GetRequiredService<ICodeGenerator<CommandDefinition>>();
             foreach (var command in domainDefinition.Commands)
             {
-                commandGenerator.GenerateCode(command, context)
+                commandGenerator.GenerateCode(command, context, versionString)
                     .ToList()
                     .ForEach(x => result.Add(x.Key, x.Value));
             }
@@ -58,11 +58,11 @@ namespace OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen
             {
                 domain = domainDefinition,
                 className = className,
-                rootNamespace = Settings.RootNamespace,
+                rootNamespace = Settings.RootNamespace + "." + versionString,
                 context = context
             });
 
-            var outputPath = Utility.ReplaceTokensInPath(Settings.DefinitionTemplates.DomainTemplate.OutputPath!, className, context!, Settings);
+            var outputPath = Utility.ReplaceTokensInPath(Settings.DefinitionTemplates.DomainTemplate.OutputPath!, className, context!, Settings, versionString);
             result.Add(outputPath, codeResult);
 
             return result;

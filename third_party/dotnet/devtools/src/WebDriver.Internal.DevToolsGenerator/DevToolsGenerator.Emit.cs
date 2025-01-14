@@ -8,6 +8,7 @@ using System.Text.Json;
 using OpenQA.Selenium.Internal.DevToolsGenerator.ProtocolDefinition;
 using System.Text.Json.Nodes;
 using System.Diagnostics;
+using Microsoft.CodeAnalysis.FlowAnalysis;
 
 namespace OpenQA.Selenium.Internal.DevToolsGenerator;
 
@@ -20,9 +21,14 @@ public partial class DevToolsGenerator
             // Debugger.Launch();
         }
 
-        if (data.Diagnostic is not null)
+        foreach (Diagnostic diag in data.InfoDiagnostics)
         {
-            source.ReportDiagnostic(data.Diagnostic);
+            source.ReportDiagnostic(diag);
+        }
+
+        if (data.ErrorDiagnostic is not null)
+        {
+            source.ReportDiagnostic(data.ErrorDiagnostic);
             return;
         }
 
@@ -39,38 +45,55 @@ public partial class DevToolsGenerator
         //    Console.WriteLine("Loading protocol definition...");
         //}
 
-        var protocolDefinitionData = GetProtocolDefinitionData(data);
-
-        var protocolDefinition = protocolDefinitionData.Deserialize<ProtocolDefinition.ProtocolDefinition>(new JsonSerializerOptions() { ReferenceHandler = ReferenceHandler.IgnoreCycles })!;
-
-        //Begin the code generation process.
-        //if (!data.InputSettings.Quiet)
-        //{
-        //    Console.WriteLine("Generating protocol definition code files...");
-        //}
-
-        var protocolGenerator = serviceProvider.GetRequiredService<ICodeGenerator<ProtocolDefinition.ProtocolDefinition>>();
-
-        IDictionary<string, string> codeFiles;
-        try
+        foreach (var x in data.VersionToTexts)
         {
-            codeFiles = protocolGenerator.GenerateCode(protocolDefinition, null);
-        }
-        catch (TemplatesManager.TemplateFileNotFoundException ex)
-        {
-            source.ReportDiagnostic(Diagnostic.Create(new DiagnosticDescriptor("WebDriver1005", "Template file missing", "Unable to locate a template at {0} - please ensure that a template file exists at this location.", "WebDriver", Severity, isEnabledByDefault: true), Location.None, ex.FilePath));
-            return;
-        }
-        //Delete the output folder if force is specified and it exists...
-        //if (!data.InputSettings.Quiet)
-        //{
-        //    Console.WriteLine("Writing generated code files to {0}...", data.InputSettings.OutputPath);
-        //}
+            var browserFile = x.Value.GetByPath("browser_protocol.json");
+            if (browserFile is null)
+            {
+                source.ReportDiagnostic(Diagnostic.Create(new DiagnosticDescriptor("WebDriver1006", "browser_protocol.json file missing", "Version {0} does not contain a browser_protocol.json file", "WebDriver", Severity, true), Location.None, x.Key));
+                return;
+            }
 
-        foreach (var codeFile in codeFiles)
-        {
-            string targetFilePath = Path.Combine(/*data.InputSettings.OutputPath, */codeFile.Key);
-            source.AddSource(targetFilePath, SourceText.From(codeFile.Value, Encoding.UTF8));
+            var jsFile = x.Value.GetByPath("js_protocol.json");
+            if (jsFile is null)
+            {
+                source.ReportDiagnostic(Diagnostic.Create(new DiagnosticDescriptor("WebDriver1007", "js_protocol.json file missing", "Version {0} does not contain a js_protocol.json file", "WebDriver", Severity, true), Location.None, x.Key));
+                return;
+            }
+
+            var protocolDefinitionData = GetProtocolDefinitionData(browserFile, jsFile);
+
+            var protocolDefinition = protocolDefinitionData.Deserialize<ProtocolDefinition.ProtocolDefinition>(new JsonSerializerOptions() { ReferenceHandler = ReferenceHandler.IgnoreCycles })!;
+
+            //Begin the code generation process.
+            //if (!data.InputSettings.Quiet)
+            //{
+            //    Console.WriteLine("Generating protocol definition code files...");
+            //}
+
+            var protocolGenerator = serviceProvider.GetRequiredService<ICodeGenerator<ProtocolDefinition.ProtocolDefinition>>();
+
+            IDictionary<string, string> codeFiles;
+            try
+            {
+                codeFiles = protocolGenerator.GenerateCode(protocolDefinition, null, x.Key.ToUpperInvariant());
+            }
+            catch (TemplatesManager.TemplateFileNotFoundException ex)
+            {
+                source.ReportDiagnostic(Diagnostic.Create(new DiagnosticDescriptor("WebDriver1005", "Template file missing", "Unable to locate a template at {0} - please ensure that a template file exists at this location.", "WebDriver", Severity, isEnabledByDefault: true), Location.None, ex.FilePath));
+                return;
+            }
+            //Delete the output folder if force is specified and it exists...
+            //if (!data.InputSettings.Quiet)
+            //{
+            //    Console.WriteLine("Writing generated code files to {0}...", data.InputSettings.OutputPath);
+            //}
+
+            foreach (var codeFile in codeFiles)
+            {
+                string targetFilePath = Path.Combine(x.Key, codeFile.Key);
+                source.AddSource(targetFilePath, SourceText.From(codeFile.Value, Encoding.UTF8));
+            }
         }
 
         //Completed.
@@ -80,31 +103,10 @@ public partial class DevToolsGenerator
         //}
     }
 
-    public static JsonObject GetProtocolDefinitionData(GatheredData args)
+    public static JsonObject GetProtocolDefinitionData(AdditionalText browserFile, AdditionalText jsFile)
     {
-        AdditionalText? browserProtocolPath = args.BrowserProtocolFile;
-        if (args.BrowserProtocolFile is null)
-        {
-            browserProtocolPath = args.BrowserProtocolFile = args.AllFiles.GetByPath(Path.Combine(args.InputSettings.BrowserProtocolPath));
-            if (args.BrowserProtocolFile is null)
-            {
-                // TODO
-            }
-        }
-
-        AdditionalText? jsProtocolPath = args.JsProtocolFile;
-        if (args.JsProtocolFile is null)
-        {
-            jsProtocolPath = args.JsProtocolFile = args.AllFiles.GetByPath(Path.Combine(args.InputSettings.JavaScriptProtocolPath, "js_protocol.json"));
-
-            if (args.JsProtocolFile is null)
-            {
-                // TODO
-            }
-        }
-
-        JsonObject? browserProtocol = browserProtocolPath?.GetText()?.ToString() is string browserProtocolString ? JsonNode.Parse(browserProtocolString) as JsonObject : null;
-        JsonObject? jsProtocol = jsProtocolPath?.GetText()?.ToString() is string jsProtocolString ? JsonNode.Parse(jsProtocolString) as JsonObject : null;
+        JsonObject? browserProtocol = browserFile.GetText()?.ToString() is string browserProtocolString ? JsonNode.Parse(browserProtocolString) as JsonObject : null;
+        JsonObject? jsProtocol = jsFile.GetText()?.ToString() is string jsProtocolString ? JsonNode.Parse(jsProtocolString) as JsonObject : null;
 
         ProtocolVersionDefinition currentVersion = new ProtocolVersionDefinition();
         currentVersion.ProtocolVersion = "1.3";
