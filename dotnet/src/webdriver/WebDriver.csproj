@@ -71,7 +71,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\third_party\dotnet\devtools\src\WebDriver.Internal.DevToolsGenerator\WebDriver.Internal.DevToolsGeneratorV2.csproj">
+    <ProjectReference Include="..\..\..\third_party\dotnet\devtools\src\generator\DevToolsGenerator.csproj">
       <OutputItemType>Analyzer</OutputItemType>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
