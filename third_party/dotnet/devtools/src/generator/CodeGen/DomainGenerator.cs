@@ -16,14 +16,14 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
         {
         }
 
-        public override IDictionary<string, string> GenerateCode(DomainDefinition domainDefinition, CodeGeneratorContext context)
+        public override IDictionary<string, string> GenerateCode(DomainDefinition domainDefinition, CodeGeneratorContext? context, string versionString)
         {
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             var typeGenerator = ServiceProvider.GetRequiredService<ICodeGenerator<TypeDefinition>>();
             foreach (TypeDefinition type in domainDefinition.Types)
             {
-                foreach (KeyValuePair<string, string> x in typeGenerator.GenerateCode(type, context))
+                foreach (KeyValuePair<string, string> x in typeGenerator.GenerateCode(type, context, versionString))
                 {
                     result.Add(x.Key, x.Value);
                 }
@@ -32,7 +32,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
             var eventGenerator = ServiceProvider.GetRequiredService<ICodeGenerator<EventDefinition>>();
             foreach (EventDefinition @event in domainDefinition.Events)
             {
-                foreach (KeyValuePair<string, string> x in eventGenerator.GenerateCode(@event, context))
+                foreach (KeyValuePair<string, string> x in eventGenerator.GenerateCode(@event, context, versionString))
                 {
                     result.Add(x.Key, x.Value);
                 }
@@ -41,7 +41,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
             var commandGenerator = ServiceProvider.GetRequiredService<ICodeGenerator<CommandDefinition>>();
             foreach (CommandDefinition command in domainDefinition.Commands)
             {
-                foreach (KeyValuePair<string, string> x in commandGenerator.GenerateCode(command, context))
+                foreach (KeyValuePair<string, string> x in commandGenerator.GenerateCode(command, context, versionString))
                 {
                     result.Add(x.Key, x.Value);
                 }
@@ -60,11 +60,11 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
             {
                 domain = domainDefinition,
                 className = className,
-                rootNamespace = Settings.RootNamespace,
+                rootNamespace = Settings.RootNamespace + "." + versionString,
                 context = context
             });
 
-            var outputPath = Utility.ReplaceTokensInPath(Settings.DefinitionTemplates.DomainTemplate.OutputPath, className, context, Settings);
+            var outputPath = Utility.ReplaceTokensInPath(Settings.DefinitionTemplates.DomainTemplate.OutputPath!, className, context!, Settings, versionString);
             result.Add(outputPath, codeResult);
 
             return result;

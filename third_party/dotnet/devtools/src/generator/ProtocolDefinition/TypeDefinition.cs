@@ -1,17 +1,17 @@
-using System.Text.Json.Serialization;
 using OpenQA.Selenium.DevToolsGenerator.Converters;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text.Json.Serialization;
 
 namespace OpenQA.Selenium.DevToolsGenerator.ProtocolDefinition
 {
-    public sealed class TypeDefinition : ProtocolDefinitionItem
+    public sealed class TypeDefinition(string id) : ProtocolDefinitionItem
     {
         [JsonPropertyName("id")]
-        public string Id { get; set; }
+        public string Id { get; } = id;
 
         [JsonPropertyName("type")]
-        public string Type { get; set; }
+        public string? Type { get; set; }
 
         [JsonPropertyName("enum")]
         public ICollection<string> Enum { get; set; } = new HashSet<string>();
@@ -20,7 +20,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.ProtocolDefinition
         public ICollection<TypeDefinition> Properties { get; set; } = new Collection<TypeDefinition>();
 
         [JsonPropertyName("items")]
-        public TypeDefinition Items { get; set; }
+        public TypeDefinition? Items { get; set; }
 
         [JsonPropertyName("minItems")]
         public int MinItems { get; set; }
@@ -29,7 +29,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.ProtocolDefinition
         public int MaxItems { get; set; }
 
         [JsonPropertyName("$ref")]
-        public string TypeReference { get; set; }
+        public string? TypeReference { get; set; }
 
         [JsonPropertyName("optional")]
         [JsonConverter(typeof(BooleanJsonConverter))]
@@ -44,7 +44,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.ProtocolDefinition
 
             if (!string.IsNullOrWhiteSpace(Name))
             {
-                return Name;
+                return Name!;
             }
 
             return $"Ref: {TypeReference}";

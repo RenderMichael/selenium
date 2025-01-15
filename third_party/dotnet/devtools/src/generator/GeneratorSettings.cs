@@ -1,4 +1,4 @@
-namespace OpenQA.Selenium.Internal.DevToolsGenerator
+namespace OpenQA.Selenium.DevToolsGenerator
 {
     /// <summary>
     /// 

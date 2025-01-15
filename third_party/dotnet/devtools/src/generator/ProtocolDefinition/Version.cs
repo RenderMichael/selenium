@@ -1,5 +1,5 @@
-using System.Text.Json.Serialization;
 using System;
+using System.Text.Json.Serialization;
 
 namespace OpenQA.Selenium.DevToolsGenerator.ProtocolDefinition
 {
@@ -9,10 +9,10 @@ namespace OpenQA.Selenium.DevToolsGenerator.ProtocolDefinition
     public sealed class Version : IComparable<Version>
     {
         [JsonPropertyName("major")]
-        public string Major { get; set; }
+        public string? Major { get; set; }
 
         [JsonPropertyName("minor")]
-        public string Minor { get; set; }
+        public string? Minor { get; set; }
 
         public int CompareTo(Version other)
         {
@@ -26,7 +26,9 @@ namespace OpenQA.Selenium.DevToolsGenerator.ProtocolDefinition
 
         public override bool Equals(object obj)
         {
-            if (obj is not Version other)
+            var other = obj as Version;
+
+            if (other == null)
             {
                 return false;
             }

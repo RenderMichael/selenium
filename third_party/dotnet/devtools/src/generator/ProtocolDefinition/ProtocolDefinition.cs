@@ -1,6 +1,6 @@
-using System.Text.Json.Serialization;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text.Json.Serialization;
 
 namespace OpenQA.Selenium.DevToolsGenerator.ProtocolDefinition
 {
@@ -8,11 +8,11 @@ namespace OpenQA.Selenium.DevToolsGenerator.ProtocolDefinition
     {
         [JsonPropertyName("browserVersion")]
         [JsonRequired]
-        public ProtocolVersionDefinition BrowserVersion { get; set; }
+        public ProtocolVersionDefinition? BrowserVersion { get; set; }
 
         [JsonPropertyName("version")]
         [JsonRequired]
-        public Version Version { get; set; }
+        public Version? Version { get; set; }
 
         [JsonPropertyName("domains")]
         [JsonRequired]

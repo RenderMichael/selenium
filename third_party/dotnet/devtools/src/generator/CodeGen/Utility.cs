@@ -1,7 +1,7 @@
-using OpenQA.Selenium.DevToolsGenerator.ProtocolDefinition;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using OpenQA.Selenium.DevToolsGenerator.ProtocolDefinition;
 
 namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
 {
@@ -10,6 +10,9 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
     /// </summary>
     public static class Utility
     {
+        public static readonly string NewLine = @"
+";
+
         /// <summary>
         /// Replaces tokens in the target path.
         /// </summary>
@@ -18,12 +21,17 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
         /// <param name="context"></param>
         /// <param name="settings"></param>
         /// <returns></returns>
-        public static string ReplaceTokensInPath(string path, string className, CodeGeneratorContext context, CodeGenerationSettings settings)
+        public static string ReplaceTokensInPath(string path, string className, CodeGeneratorContext context, CodeGenerationSettings settings, string versionString)
         {
+            if (versionString is null)
+            {
+                throw new ArgumentNullException(nameof(versionString));
+            }
+
             path = path.Replace("{{className}}", className);
-            path = path.Replace("{{rootNamespace}}", settings.RootNamespace);
+            path = path.Replace("{{rootNamespace}}", settings.RootNamespace + "." + versionString);
             path = path.Replace("{{templatePath}}", settings.TemplatesPath);
-            path = path.Replace("{{domainName}}", context.Domain.Name);
+            path = path.Replace("{{domainName}}", context.Domain!.Name);
             path = path.Replace('\\', System.IO.Path.DirectorySeparatorChar);
             path = path.Replace("{{separator}}", System.IO.Path.DirectorySeparatorChar.ToString());
             return path;
@@ -46,13 +54,13 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
                 type = typeDefinition.TypeReference;
             }
 
-            string mappedType = null;
-            if (type.Contains(".") && knownTypes.ContainsKey(type))
+            string mappedType;
+            if (type!.Contains(".") && knownTypes.ContainsKey(type))
             {
                 var typeInfo = knownTypes[type];
                 if (typeInfo.IsPrimitive)
                 {
-                    var primitiveType = typeInfo.TypeName;
+                    var primitiveType = typeInfo.TypeName!;
 
                     if (typeDefinition.Optional && typeInfo.ByRef)
                     {
@@ -72,8 +80,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
                     mappedType += "?";
                 }
             }
-
-            if (mappedType == null)
+            else
             {
                 var fullyQualifiedTypeName = $"{domainDefinition.Name}.{type}";
 
@@ -87,37 +94,19 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
                         mappedType += "?";
                     }
                 }
-            }
-
-
-            if (mappedType == null)
-            {
-                switch (type)
+                else
                 {
-                    case "number":
-                        mappedType = typeDefinition.Optional ? "double?" : "double";
-                        break;
-                    case "integer":
-                        mappedType = typeDefinition.Optional ? "long?" : "long";
-                        break;
-                    case "boolean":
-                        mappedType = typeDefinition.Optional ? "bool?" : "bool";
-                        break;
-                    case "string":
-                        mappedType = "string";
-                        break;
-                    case "object":
-                    case "any":
-                        mappedType = "object";
-                        break;
-                    case "binary":
-                        mappedType = "byte[]";
-                        break;
-                    case "array":
-                        mappedType = GetTypeMappingForType(typeDefinition.Items, domainDefinition, knownTypes, true);
-                        break;
-                    default:
-                        throw new InvalidOperationException($"Unmapped data type: {type}");
+                    mappedType = type switch
+                    {
+                        "number" => typeDefinition.Optional ? "double?" : "double",
+                        "integer" => typeDefinition.Optional ? "long?" : "long",
+                        "boolean" => typeDefinition.Optional ? "bool?" : "bool",
+                        "string" => "string",
+                        "object" or "any" => "object",
+                        "binary" => "byte[]",
+                        "array" => GetTypeMappingForType(typeDefinition.Items!, domainDefinition, knownTypes, true),
+                        _ => throw new InvalidOperationException($"Unmapped data type: {type}"),
+                    };
                 }
             }
 
@@ -129,7 +118,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
             return mappedType;
         }
 
-        public static string ReplaceLineEndings(string value, string replacement = null)
+        public static string? ReplaceLineEndings(string? value, string? replacement = null)
         {
             if (string.IsNullOrEmpty(value))
             {

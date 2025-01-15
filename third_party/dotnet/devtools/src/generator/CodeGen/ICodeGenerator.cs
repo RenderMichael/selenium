@@ -16,6 +16,6 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
         /// <param name="item"></param>
         /// <param name="context"></param>
         /// <returns></returns>
-        IDictionary<string, string> GenerateCode(T item, CodeGeneratorContext context);
+        IDictionary<string, string> GenerateCode(T item, CodeGeneratorContext? context, string versionString);
     }
 }

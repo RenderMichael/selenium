@@ -15,9 +15,14 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
         {
         }
 
-        public override IDictionary<string, string> GenerateCode(TypeDefinition typeDefinition, CodeGeneratorContext context)
+        public override IDictionary<string, string> GenerateCode(TypeDefinition typeDefinition, CodeGeneratorContext? context, string versionString)
         {
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            if (context is null)
+            {
+                throw new InvalidOperationException("Expected context to be non-null");
+            }
 
             if (context.KnownTypes == null)
             {
@@ -69,11 +74,11 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
                 type = typeDefinition,
                 className = className,
                 domain = context.Domain,
-                rootNamespace = Settings.RootNamespace,
+                rootNamespace = Settings.RootNamespace + "." + versionString,
                 context = context
             });
 
-            var outputPath = Utility.ReplaceTokensInPath(templateSettings.OutputPath, className, context, Settings);
+            var outputPath = Utility.ReplaceTokensInPath(templateSettings.OutputPath!, className, context, Settings, versionString);
             result.Add(outputPath, codeResult);
 
             return result;

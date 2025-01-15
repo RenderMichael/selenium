@@ -6,6 +6,7 @@ using Humanizer;
 using System.Linq;
 using System.Text;
 using OpenQA.Selenium.DevToolsGenerator.ProtocolDefinition;
+using Microsoft.CodeAnalysis;
 
 namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
 {
@@ -14,14 +15,14 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
     /// </summary>
     public sealed class TemplatesManager
     {
-        private readonly Dictionary<string, Func<object, string>> m_templateGenerators = new Dictionary<string, Func<object, string>>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<AdditionalText, Func<object, string>> m_templateGenerators = new Dictionary<AdditionalText, Func<object, string>>();
 
         /// <summary>
         /// Gets the code generation settings associated with the protocol generator
         /// </summary>
-        public CodeGenerationSettings Settings { get; }
+        public GatheredDataService Settings { get; }
 
-        public TemplatesManager(CodeGenerationSettings settings)
+        public TemplatesManager(GatheredDataService settings)
         {
             Settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
@@ -33,24 +34,25 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
         /// <returns></returns>
         public Func<object, string> GetGeneratorForTemplate(CodeGenerationTemplateSettings templateSettings)
         {
-            var templatePath = templateSettings.TemplatePath;
-            if (m_templateGenerators.ContainsKey(templatePath))
+            var templatePath = templateSettings.TemplatePath!;
+
+            AdditionalText? templateFile = Settings.Data.AllFiles.GetByPath(templatePath);
+            if (templateFile is not null && m_templateGenerators.TryGetValue(templateFile, out var cachedTemplateFunc))
             {
-                return m_templateGenerators[templatePath];
+                return cachedTemplateFunc;
             }
 
-            var targetTemplate = templatePath;
-            if (!Path.IsPathRooted(targetTemplate))
+            if (templateFile is null && !Path.IsPathRooted(templatePath))
             {
-                targetTemplate = Path.Combine(Settings.TemplatesPath, targetTemplate);
+                templateFile = Settings.Data.AllFiles.GetByPath(Path.Combine(Settings.Data.GenerationSettings.TemplatesPath, templatePath));
             }
 
-            if (!File.Exists(targetTemplate))
+            if (templateFile is null)
             {
-                throw new FileNotFoundException($"Unable to locate a template at {targetTemplate} - please ensure that a template file exists at this location.");
+                throw new TemplateFileNotFoundException($"Unable to locate a template at {templatePath} - please ensure that a template file exists at this location.", templatePath);
             }
 
-            var templateContents = File.ReadAllText(targetTemplate);
+            var templateContents = templateFile.GetText()?.ToString() ?? throw new IOException($"TemplatesManager - Unable to read from file {templateFile.Path}");
 
             Handlebars.RegisterHelper("dehumanize", (writer, context, arguments) =>
             {
@@ -103,7 +105,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
                     int.TryParse(frontPaddingObj.ToString(), out frontPadding);
                 }
 
-                str = Utility.ReplaceLineEndings(str, Environment.NewLine + new StringBuilder(4 * frontPadding).Insert(0, "    ", frontPadding) + "/// ");
+                str = Utility.ReplaceLineEndings(str, Utility.NewLine + new StringBuilder(4 * frontPadding).Insert(0, "    ", frontPadding) + "/// ");
 
                 writer.WriteSafeString(str);
             });
@@ -125,12 +127,18 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
                     throw new InvalidOperationException("Expected context argument to be non-null.");
                 }
 
-                var mappedType = Utility.GetTypeMappingForType(typeDefinition, codeGenContext.Domain, codeGenContext.KnownTypes);
+                var mappedType = Utility.GetTypeMappingForType(typeDefinition, codeGenContext.Domain!, codeGenContext.KnownTypes!);
                 writer.WriteSafeString(mappedType);
             });
 
             Handlebars.Configuration.TextEncoder = null;
             return Handlebars.Compile(templateContents);
         }
+
+        public sealed class TemplateFileNotFoundException(string message, string filePath) : FileNotFoundException(message)
+        {
+            public string FilePath { get; } = filePath;
+        }
+
     }
 }

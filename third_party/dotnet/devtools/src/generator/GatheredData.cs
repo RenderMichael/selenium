@@ -1,8 +1,9 @@
 using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
-using OpenQA.Selenium.Internal.DevToolsGenerator.CodeGen;
+using OpenQA.Selenium.DevToolsGenerator.CodeGen;
+using System.Collections.Generic;
 
-namespace OpenQA.Selenium.Internal.DevToolsGenerator
+namespace OpenQA.Selenium.DevToolsGenerator
 {
     public record struct GatheredData(
         GeneratorSettings InputSettings,

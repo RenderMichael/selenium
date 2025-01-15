@@ -15,7 +15,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
         /// <param name="serviceCollection"></param>
         /// <param name="settings"></param>
         /// <returns></returns>
-        public static IServiceCollection AddCodeGenerationServices(this IServiceCollection serviceCollection, CodeGenerationSettings settings)
+        public static IServiceCollection AddCodeGenerationServices(this IServiceCollection serviceCollection, GatheredDataService settings)
         {
             if (settings == null)
             {

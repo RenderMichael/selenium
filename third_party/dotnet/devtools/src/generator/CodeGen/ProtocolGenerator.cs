@@ -18,7 +18,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
         {
         }
 
-        public override IDictionary<string, string> GenerateCode(ProtocolDefinition.ProtocolDefinition protocolDefinition, CodeGeneratorContext context)
+        public override IDictionary<string, string> GenerateCode(ProtocolDefinition.ProtocolDefinition protocolDefinition, CodeGeneratorContext? context, string versionString)
         {
             if (string.IsNullOrWhiteSpace(Settings.TemplatesPath))
             {
@@ -44,11 +44,11 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
                 foreach (var command in domain.Commands)
                 {
                     commands.Add(new CommandInfo
-                    {
-                        CommandName = $"{domain.Name}.{command.Name}",
-                        FullTypeName = $"{domain.Name.Dehumanize()}.{command.Name.Dehumanize()}CommandSettings",
-                        FullResponseTypeName = $"{domain.Name.Dehumanize()}.{command.Name.Dehumanize()}CommandResponse"
-                    });
+                    (
+                        commandName: $"{domain.Name}.{command.Name}",
+                        fullTypeName: $"{domain.Name.Dehumanize()}.{command.Name.Dehumanize()}CommandSettings",
+                        fullResponseTypeName: $"{domain.Name.Dehumanize()}.{command.Name.Dehumanize()}CommandResponse"
+                    ));
                 }
             }
 
@@ -60,10 +60,10 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
                 foreach (var @event in domain.Events)
                 {
                     events.Add(new EventInfo
-                    {
-                        EventName = $"{domain.Name}.{@event.Name}",
-                        FullTypeName = $"{domain.Name.Dehumanize()}.{@event.Name.Dehumanize()}EventArgs"
-                    });
+                    (
+                        eventName: $"{domain.Name}.{@event.Name}",
+                        fullTypeName: $"{domain.Name.Dehumanize()}.{@event.Name.Dehumanize()}EventArgs"
+                    ));
                 }
             }
 
@@ -75,7 +75,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
             {
                 chromeVersion = protocolDefinition.BrowserVersion,
                 runtimeVersion = Settings.RuntimeVersion,
-                rootNamespace = Settings.RootNamespace,
+                rootNamespace = Settings.RootNamespace + "." + versionString,
                 domains = domains,
                 commands = commands,
                 events = events,
@@ -89,12 +89,12 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
             {
                 var includeCodeGenerator = TemplatesManager.GetGeneratorForTemplate(include);
                 var includeCodeResult = includeCodeGenerator(includeData);
-                result.Add(include.OutputPath, includeCodeResult);
+                result.Add(include.OutputPath!, includeCodeResult);
             }
 
             //Generate code for each domain, type, command, event from their respective templates.
 
-            foreach (KeyValuePair<string, string> x in GenerateCode(domains, types))
+            foreach (KeyValuePair<string, string> x in GenerateCode(domains, types, versionString))
             {
                 result.Add(x.Key, x.Value);
             }
@@ -116,9 +116,10 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
                     {
                         if (propertyType.Type == "string" && type.Enum != null && propertyType.Enum.Count > 0)
                         {
-                            TypeDefinition propertyTypeDefinition = new TypeDefinition()
+                            TypeDefinition propertyTypeDefinition = new TypeDefinition(
+                                id: type.Id.Dehumanize() + propertyType.Name.Dehumanize() + "Values"
+                                )
                             {
-                                Id = type.Id.Dehumanize() + propertyType.Name.Dehumanize() + "Values",
                                 Type = propertyType.Type,
                                 Description = $"Enumerated values for {domain.Name}.{type.Id}.{propertyType.Name}"
                             };
@@ -136,35 +137,36 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
                     switch (type.Type)
                     {
                         case "object":
-                            typeInfo = new TypeInfo
+                            typeInfo = new TypeInfo(
+                                typeName: type.Id.Dehumanize()
+                                )
                             {
                                 IsPrimitive = false,
-                                TypeName = type.Id.Dehumanize(),
                             };
                             break;
                         case "string":
                             if (type.Enum != null && type.Enum.Count > 0)
                             {
-                                typeInfo = new TypeInfo
+                                typeInfo = new TypeInfo(
+                                    typeName: type.Id.Dehumanize()
+                                    )
                                 {
                                     ByRef = true,
                                     IsPrimitive = false,
-                                    TypeName = type.Id.Dehumanize(),
                                 };
                             }
                             else
                             {
-                                typeInfo = new TypeInfo
+                                typeInfo = new TypeInfo("string")
                                 {
                                     IsPrimitive = true,
-                                    TypeName = "string"
                                 };
                             }
 
                             break;
                         case "array":
                             if ((type.Items == null || string.IsNullOrWhiteSpace(type.Items.Type)) &&
-                                type.Items.TypeReference != "StringIndex" && type.Items.TypeReference != "FilterEntry")
+                                type.Items!.TypeReference != "StringIndex" && type.Items.TypeReference != "FilterEntry")
                             {
                                 throw new NotImplementedException("Did not expect a top-level domain array type to specify a TypeReference");
                             }
@@ -199,26 +201,23 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
                                 default:
                                     throw new NotImplementedException($"Did not expect a top-level domain array type to specify items of type {type.Items.Type}");
                             }
-                            typeInfo = new TypeInfo
+                            typeInfo = new TypeInfo($"{itemType}[]")
                             {
                                 IsPrimitive = true,
-                                TypeName = $"{itemType}[]"
                             };
                             break;
                         case "number":
-                            typeInfo = new TypeInfo
+                            typeInfo = new TypeInfo("double")
                             {
                                 ByRef = true,
                                 IsPrimitive = true,
-                                TypeName = "double"
                             };
                             break;
                         case "integer":
-                            typeInfo = new TypeInfo
+                            typeInfo = new TypeInfo("long")
                             {
                                 ByRef = true,
                                 IsPrimitive = true,
-                                TypeName = "long"
                             };
                             break;
                         default:
@@ -232,9 +231,8 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
 
                 foreach (var embeddedEnumType in embeddedTypes)
                 {
-                    TypeInfo propertyTypeInfo = new TypeInfo
+                    TypeInfo propertyTypeInfo = new TypeInfo(embeddedEnumType.Id)
                     {
-                        TypeName = embeddedEnumType.Id,
                         ByRef = true,
                         IsPrimitive = false,
                         Namespace = domain.Name.Dehumanize(),
@@ -248,7 +246,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
             return knownTypes;
         }
 
-        private Dictionary<string, string> GenerateCode(ICollection<DomainDefinition> domains, Dictionary<string, TypeInfo> knownTypes)
+        private Dictionary<string, string> GenerateCode(ICollection<DomainDefinition> domains, Dictionary<string, TypeInfo> knownTypes, string versionString)
         {
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -257,8 +255,8 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
             //Generate types/events/commands for all domains.
             foreach (var domain in domains)
             {
-                var context = new CodeGeneratorContext { Domain = domain, KnownTypes = knownTypes };
-                foreach (KeyValuePair<string, string> x in domainGenerator.GenerateCode(domain, context))
+                var context = new CodeGeneratorContext(domain, knownTypes);
+                foreach (KeyValuePair<string, string> x in domainGenerator.GenerateCode(domain, context, versionString))
                 {
                     result.Add(x.Key, x.Value);
                 }
