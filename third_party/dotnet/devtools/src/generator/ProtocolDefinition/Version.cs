@@ -14,7 +14,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.ProtocolDefinition
         [JsonPropertyName("minor")]
         public string? Minor { get; set; }
 
-        public int CompareTo(Version other)
+        public int CompareTo(Version? other)
         {
             if (other == null)
             {
@@ -24,7 +24,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.ProtocolDefinition
             return ToString().CompareTo(other.ToString());
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as Version;
 

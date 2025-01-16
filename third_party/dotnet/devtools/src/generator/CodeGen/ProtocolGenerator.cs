@@ -22,7 +22,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
         {
             if (string.IsNullOrWhiteSpace(Settings.TemplatesPath))
             {
-                Settings.TemplatesPath = Path.GetDirectoryName(Settings.TemplatesPath);
+                Settings.TemplatesPath = Path.GetDirectoryName(Settings.TemplatesPath)!;
             }
 
             ICollection<DomainDefinition> domains = protocolDefinition.Domains;
@@ -62,8 +62,8 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
                     events.Add(new EventInfo
                     (
                         eventName: $"{domain.Name}.{@event.Name}",
-                        fullTypeName: $"{domain.Name.Dehumanize()}.{@event.Name.Dehumanize()}EventArgs"
-                    ));
+                        fullTypeName: $"{domain.Name.Dehumanize()}.{@event.Name.Dehumanize()}EventArgs")
+                    );
                 }
             }
 
@@ -102,7 +102,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
             return result;
         }
 
-        private Dictionary<string, TypeInfo> GetTypesInDomain(ICollection<DomainDefinition> domains)
+        private static Dictionary<string, TypeInfo> GetTypesInDomain(ICollection<DomainDefinition> domains)
         {
             var knownTypes = new Dictionary<string, TypeInfo>(StringComparer.OrdinalIgnoreCase);
 
@@ -116,9 +116,8 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
                     {
                         if (propertyType.Type == "string" && type.Enum != null && propertyType.Enum.Count > 0)
                         {
-                            TypeDefinition propertyTypeDefinition = new TypeDefinition(
-                                id: type.Id.Dehumanize() + propertyType.Name.Dehumanize() + "Values"
-                                )
+                            string id = $"{type.Id.Dehumanize()}{propertyType.Name.Dehumanize()}Values";
+                            TypeDefinition propertyTypeDefinition = new TypeDefinition(id)
                             {
                                 Type = propertyType.Type,
                                 Description = $"Enumerated values for {domain.Name}.{type.Id}.{propertyType.Name}"
@@ -137,36 +136,33 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
                     switch (type.Type)
                     {
                         case "object":
-                            typeInfo = new TypeInfo(
-                                typeName: type.Id.Dehumanize()
-                                )
-                            {
-                                IsPrimitive = false,
-                            };
+                            typeInfo = new TypeInfo(typeName: type.Id.Dehumanize(), isPrimitive: false);
                             break;
+
                         case "string":
                             if (type.Enum != null && type.Enum.Count > 0)
                             {
-                                typeInfo = new TypeInfo(
-                                    typeName: type.Id.Dehumanize()
-                                    )
+                                typeInfo = new TypeInfo(typeName: type.Id.Dehumanize(), isPrimitive: false)
                                 {
                                     ByRef = true,
-                                    IsPrimitive = false,
                                 };
                             }
                             else
                             {
-                                typeInfo = new TypeInfo("string")
-                                {
-                                    IsPrimitive = true,
-                                };
+                                typeInfo = new TypeInfo("string", isPrimitive: true);
                             }
 
                             break;
+
                         case "array":
-                            if ((type.Items == null || string.IsNullOrWhiteSpace(type.Items.Type)) &&
-                                type.Items!.TypeReference != "StringIndex" && type.Items.TypeReference != "FilterEntry")
+                            if (type.Items is null)
+                            {
+                                throw new InvalidOperationException("Type definition's Type was array but Items is missing");
+                            }
+
+                            if (string.IsNullOrWhiteSpace(type.Items.Type) &&
+                                type.Items.TypeReference != "StringIndex" &&
+                                type.Items.TypeReference != "FilterEntry")
                             {
                                 throw new NotImplementedException("Did not expect a top-level domain array type to specify a TypeReference");
                             }
@@ -201,25 +197,23 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
                                 default:
                                     throw new NotImplementedException($"Did not expect a top-level domain array type to specify items of type {type.Items.Type}");
                             }
-                            typeInfo = new TypeInfo($"{itemType}[]")
-                            {
-                                IsPrimitive = true,
-                            };
+                            typeInfo = new TypeInfo(typeName: $"{itemType}[]", isPrimitive: true);
                             break;
+
                         case "number":
-                            typeInfo = new TypeInfo("double")
+                            typeInfo = new TypeInfo("double", isPrimitive: true)
                             {
                                 ByRef = true,
-                                IsPrimitive = true,
                             };
                             break;
+
                         case "integer":
-                            typeInfo = new TypeInfo("long")
+                            typeInfo = new TypeInfo("long", isPrimitive: true)
                             {
                                 ByRef = true,
-                                IsPrimitive = true,
                             };
                             break;
+
                         default:
                             throw new InvalidOperationException($"Unknown Type Definition Type: {type.Id}");
                     }
@@ -231,10 +225,9 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
 
                 foreach (var embeddedEnumType in embeddedTypes)
                 {
-                    TypeInfo propertyTypeInfo = new TypeInfo(embeddedEnumType.Id)
+                    TypeInfo propertyTypeInfo = new TypeInfo(typeName: embeddedEnumType.Id, isPrimitive: false)
                     {
                         ByRef = true,
-                        IsPrimitive = false,
                         Namespace = domain.Name.Dehumanize(),
                         SourcePath = $"{domain.Name}.{embeddedEnumType.Id}"
                     };

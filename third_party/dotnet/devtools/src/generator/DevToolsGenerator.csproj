@@ -9,6 +9,7 @@
     <!-- 👇 New project, why not! -->
     <Nullable>enable</Nullable>
     <LangVersion>Latest</LangVersion>
+    <Nullable>enable</Nullable>
 
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>

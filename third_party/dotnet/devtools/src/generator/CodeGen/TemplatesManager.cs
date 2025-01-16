@@ -34,7 +34,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
         /// <returns></returns>
         public Func<object, string> GetGeneratorForTemplate(CodeGenerationTemplateSettings templateSettings)
         {
-            var templatePath = templateSettings.TemplatePath!;
+            var templatePath = templateSettings.TemplatePath;
 
             AdditionalText? templateFile = Settings.Data.AllFiles.GetByPath(templatePath);
             if (templateFile is not null && m_templateGenerators.TryGetValue(templateFile, out var cachedTemplateFunc))
@@ -61,7 +61,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
                     throw new HandlebarsException("{{humanize}} helper must have exactly one argument");
                 }
 
-                var str = arguments[0].ToString();
+                var str = arguments[0].ToString()!;
 
                 //Some overrides for values that start with '-' -- this fixes two instances in Runtime.UnserializableValue
                 if (str.StartsWith("-"))

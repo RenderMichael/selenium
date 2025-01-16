@@ -47,17 +47,21 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
         /// <returns></returns>
         public static string GetTypeMappingForType(TypeDefinition typeDefinition, DomainDefinition domainDefinition, IDictionary<string, TypeInfo> knownTypes, bool isArray = false)
         {
+            if (typeDefinition is null)
+            {
+                throw new ArgumentNullException(nameof(typeDefinition));
+            }
+
             var type = typeDefinition.Type;
 
             if (string.IsNullOrWhiteSpace(type))
             {
-                type = typeDefinition.TypeReference;
+                type = typeDefinition.TypeReference ?? throw new ArgumentException("Type definition has neither Type or TypeReference", nameof(typeDefinition));
             }
 
             string mappedType;
-            if (type!.Contains(".") && knownTypes.ContainsKey(type))
+            if (type.Contains(".") && knownTypes.TryGetValue(type, out TypeInfo? typeInfo))
             {
-                var typeInfo = knownTypes[type];
                 if (typeInfo.IsPrimitive)
                 {
                     var primitiveType = typeInfo.TypeName!;
@@ -80,33 +84,50 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
                     mappedType += "?";
                 }
             }
+            else if (knownTypes.TryGetValue($"{domainDefinition.Name}.{type}", out typeInfo))
+            {
+                mappedType = typeInfo.TypeName;
+                if (typeInfo.ByRef && typeDefinition.Optional)
+                {
+                    mappedType += "?";
+                }
+            }
             else
             {
-                var fullyQualifiedTypeName = $"{domainDefinition.Name}.{type}";
-
-                if (knownTypes.ContainsKey(fullyQualifiedTypeName))
+                switch (type)
                 {
-                    var typeInfo = knownTypes[fullyQualifiedTypeName];
+                    case "number":
+                        mappedType = typeDefinition.Optional ? "double?" : "double";
+                        break;
 
-                    mappedType = typeInfo.TypeName;
-                    if (typeInfo.ByRef && typeDefinition.Optional)
-                    {
-                        mappedType += "?";
-                    }
-                }
-                else
-                {
-                    mappedType = type switch
-                    {
-                        "number" => typeDefinition.Optional ? "double?" : "double",
-                        "integer" => typeDefinition.Optional ? "long?" : "long",
-                        "boolean" => typeDefinition.Optional ? "bool?" : "bool",
-                        "string" => "string",
-                        "object" or "any" => "object",
-                        "binary" => "byte[]",
-                        "array" => GetTypeMappingForType(typeDefinition.Items!, domainDefinition, knownTypes, true),
-                        _ => throw new InvalidOperationException($"Unmapped data type: {type}"),
-                    };
+                    case "integer":
+                        mappedType = typeDefinition.Optional ? "long?" : "long";
+                        break;
+
+                    case "boolean":
+                        mappedType = typeDefinition.Optional ? "bool?" : "bool";
+                        break;
+
+                    case "string":
+                        mappedType = "string";
+                        break;
+
+                    case "object":
+                    case "any":
+                        mappedType = "object";
+                        break;
+
+                    case "binary":
+                        mappedType = "byte[]";
+                        break;
+
+                    case "array":
+                        var items = typeDefinition.Items ?? throw new InvalidOperationException("Type definition was type array but has no Items");
+                        mappedType = GetTypeMappingForType(items, domainDefinition, knownTypes, true);
+                        break;
+
+                    default:
+                        throw new InvalidOperationException($"Unmapped data type: {type}");
                 }
             }
 
@@ -127,7 +148,9 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
 
             replacement ??= string.Empty;
 
-            return Regex.Replace(value, @"\r\n?|\n|\u2028|\u2029", replacement, RegexOptions.Compiled);
+            return WhitespaceRegex.Replace(value, replacement);
         }
+
+        private static Regex WhitespaceRegex { get; } = new Regex(@"\r\n?|\n|\u2028|\u2029", RegexOptions.Compiled);
     }
 }

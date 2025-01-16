@@ -5,8 +5,8 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
     /// </summary>
     public sealed class EventInfo(string eventName, string fullTypeName)
     {
-        public string EventName { get; set; } = eventName;
+        public string EventName { get; } = eventName;
 
-        public string FullTypeName { get; set; } = fullTypeName;
+        public string FullTypeName { get; } = fullTypeName;
     }
 }

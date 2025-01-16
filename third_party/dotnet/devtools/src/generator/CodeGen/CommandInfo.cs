@@ -5,10 +5,10 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
     /// </summary>
     public sealed class CommandInfo(string commandName, string fullTypeName, string fullResponseTypeName)
     {
-        public string? CommandName { get; } = commandName;
+        public string CommandName { get; } = commandName;
 
-        public string? FullTypeName { get; } = fullTypeName;
+        public string FullTypeName { get; } = fullTypeName;
 
-        public string? FullResponseTypeName { get; } = fullResponseTypeName;
+        public string FullResponseTypeName { get; } = fullResponseTypeName;
     }
 }
