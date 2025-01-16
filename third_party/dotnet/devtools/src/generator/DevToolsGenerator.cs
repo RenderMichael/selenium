@@ -27,10 +27,7 @@ namespace OpenQA.Selenium.DevToolsGenerator
                 return devGenSettings;
             }).WithTrackingName("Settings");
 
-            IncrementalValueProvider<ImmutableArray<AdditionalText>> additionalTexts = context.AdditionalTextsProvider.Select((file, ct) =>
-            {
-                return file;
-            }).Collect().WithTrackingName("Files");
+            IncrementalValueProvider<ImmutableArray<AdditionalText>> additionalTexts = context.AdditionalTextsProvider.Collect().WithTrackingName("Files");
 
             IncrementalValueProvider<GatheredData> parsedFiles = additionalTexts.Combine(settingsProvider).Select(GatherData).WithTrackingName("Data");
             context.RegisterSourceOutput(parsedFiles, Execute);

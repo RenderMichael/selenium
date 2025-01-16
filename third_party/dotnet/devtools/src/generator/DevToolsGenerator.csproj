@@ -6,7 +6,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <!-- 👇 We don't want to reference the source generator dll directly in consuming projects -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <!-- 👇 New project, why not! -->
     <Nullable>enable</Nullable>
     <LangVersion>Latest</LangVersion>
     <Nullable>enable</Nullable>

@@ -35,16 +35,12 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
         public Func<object, string> GetGeneratorForTemplate(CodeGenerationTemplateSettings templateSettings)
         {
             var templatePath = templateSettings.TemplatePath;
+            AdditionalText templateFile = Settings.Data.AllFiles.GetByPath(templatePath)
+                ?? throw new TemplateFileNotFoundException($"Unable to locate a template at {templatePath} - please ensure that a template file exists at this location.", templatePath);
 
-            AdditionalText? templateFile = Settings.Data.AllFiles.GetByPath(templatePath);
-            if (templateFile is not null && m_templateGenerators.TryGetValue(templateFile, out var value))
+            if (m_templateGenerators.TryGetValue(templateFile, out var value))
             {
                 return value;
-            }
-
-            if (templateFile is null)
-            {
-                throw new TemplateFileNotFoundException($"Unable to locate a template at {templatePath} - please ensure that a template file exists at this location.", templatePath);
             }
 
             var templateContents = templateFile.GetText()?.ToString() ?? throw new IOException($"TemplatesManager - Unable to read from file {templateFile.Path}");

@@ -23,9 +23,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
         /// <summary>
         /// Gets the code generation settings associated with the generator.
         /// </summary>
-        public GatheredDataService Data => m_settings.Value;
-
-        public CodeGenerationSettings Settings => Data.Data.GenerationSettings;
+        public CodeGenerationSettings Settings => m_settings.Value.Data.GenerationSettings;
 
         /// <summary>
         /// Gets a template manager associated with the generator.

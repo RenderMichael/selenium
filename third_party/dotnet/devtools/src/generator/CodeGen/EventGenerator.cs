@@ -32,7 +32,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
             {
                 @event = eventDefinition,
                 className = className,
-                domain = context!.Domain,
+                domain = context.Domain,
                 rootNamespace = Settings.RootNamespace + "." + versionString,
                 context = context
             });
