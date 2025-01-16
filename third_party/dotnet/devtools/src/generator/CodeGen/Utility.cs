@@ -60,7 +60,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
             }
 
             string mappedType;
-            if (type.Contains(".") && knownTypes.TryGetValue(type, out TypeInfo? typeInfo))
+            if (type!.Contains(".") && knownTypes.TryGetValue(type, out TypeInfo? typeInfo))
             {
                 if (typeInfo.IsPrimitive)
                 {
