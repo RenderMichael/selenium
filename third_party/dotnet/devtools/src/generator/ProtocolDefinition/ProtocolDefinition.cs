@@ -1,6 +1,6 @@
+using System.Text.Json.Serialization;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Text.Json.Serialization;
 
 namespace OpenQA.Selenium.DevToolsGenerator.ProtocolDefinition
 {
