@@ -1,4 +1,6 @@
 using System.Text.Json.Serialization;
+using System;
+using System.Text.RegularExpressions;
 
 namespace OpenQA.Selenium.DevToolsGenerator.ProtocolDefinition
 {

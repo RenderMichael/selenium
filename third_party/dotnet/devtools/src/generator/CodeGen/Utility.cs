@@ -1,7 +1,7 @@
+using OpenQA.Selenium.DevToolsGenerator.ProtocolDefinition;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using OpenQA.Selenium.DevToolsGenerator.ProtocolDefinition;
 
 namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
 {
@@ -64,7 +64,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
             {
                 if (typeInfo.IsPrimitive)
                 {
-                    var primitiveType = typeInfo.TypeName!;
+                    var primitiveType = typeInfo.TypeName;
 
                     if (typeDefinition.Optional && typeInfo.ByRef)
                     {

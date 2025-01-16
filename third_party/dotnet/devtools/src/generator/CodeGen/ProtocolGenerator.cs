@@ -89,7 +89,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
             {
                 var includeCodeGenerator = TemplatesManager.GetGeneratorForTemplate(include);
                 var includeCodeResult = includeCodeGenerator(includeData);
-                result.Add(include.OutputPath!, includeCodeResult);
+                result.Add(include.OutputPath, includeCodeResult);
             }
 
             //Generate code for each domain, type, command, event from their respective templates.

@@ -79,7 +79,7 @@ namespace OpenQA.Selenium.DevToolsGenerator
                 IDictionary<string, string> codeFiles;
                 try
                 {
-                    codeFiles = protocolGenerator.GenerateCode(protocolDefinition, null, x.Key.ToUpperInvariant());
+                    codeFiles = protocolGenerator.GenerateCode(protocolDefinition, null!, x.Key.ToUpperInvariant());
                 }
                 catch (TemplatesManager.TemplateFileNotFoundException ex)
                 {

@@ -37,14 +37,9 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
             var templatePath = templateSettings.TemplatePath;
 
             AdditionalText? templateFile = Settings.Data.AllFiles.GetByPath(templatePath);
-            if (templateFile is not null && m_templateGenerators.TryGetValue(templateFile, out var cachedTemplateFunc))
+            if (templateFile is not null && m_templateGenerators.TryGetValue(templateFile, out var value))
             {
-                return cachedTemplateFunc;
-            }
-
-            if (templateFile is null && !Path.IsPathRooted(templatePath))
-            {
-                templateFile = Settings.Data.AllFiles.GetByPath(Path.Combine(Settings.Data.GenerationSettings.TemplatesPath, templatePath));
+                return value;
             }
 
             if (templateFile is null)
@@ -127,7 +122,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
                     throw new InvalidOperationException("Expected context argument to be non-null.");
                 }
 
-                var mappedType = Utility.GetTypeMappingForType(typeDefinition, codeGenContext.Domain!, codeGenContext.KnownTypes!);
+                var mappedType = Utility.GetTypeMappingForType(typeDefinition, codeGenContext.Domain, codeGenContext.KnownTypes);
                 writer.WriteSafeString(mappedType);
             });
 

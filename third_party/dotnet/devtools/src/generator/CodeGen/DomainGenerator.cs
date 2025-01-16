@@ -16,7 +16,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
         {
         }
 
-        public override IDictionary<string, string> GenerateCode(DomainDefinition domainDefinition, CodeGeneratorContext? context, string versionString)
+        public override IDictionary<string, string> GenerateCode(DomainDefinition domainDefinition, CodeGeneratorContext context, string versionString)
         {
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 

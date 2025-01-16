@@ -39,6 +39,6 @@ namespace OpenQA.Selenium.DevToolsGenerator.CodeGen
             m_templatesManager = new Lazy<TemplatesManager>(() => ServiceProvider.GetRequiredService<TemplatesManager>());
         }
 
-        public abstract IDictionary<string, string> GenerateCode(T item, CodeGeneratorContext? context, string versionString);
+        public abstract IDictionary<string, string> GenerateCode(T item, CodeGeneratorContext context, string versionString);
     }
 }

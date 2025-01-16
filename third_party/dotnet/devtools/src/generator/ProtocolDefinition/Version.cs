@@ -1,5 +1,5 @@
-using System;
 using System.Text.Json.Serialization;
+using System;
 
 namespace OpenQA.Selenium.DevToolsGenerator.ProtocolDefinition
 {
@@ -26,9 +26,7 @@ namespace OpenQA.Selenium.DevToolsGenerator.ProtocolDefinition
 
         public override bool Equals(object? obj)
         {
-            var other = obj as Version;
-
-            if (other == null)
+            if (obj is not Version other)
             {
                 return false;
             }
