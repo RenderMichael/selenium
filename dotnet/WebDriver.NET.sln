@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebDriver.Safari.Tests", "t
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebDriver.Support.Tests", "test\support\WebDriver.Support.Tests.csproj", "{2136C695-2526-45E0-AE1D-68FBBC6A9DE2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebDriver.Internal.DevToolsGenerator", "..\third_party\dotnet\devtools\src\generator\DevToolsGenerator.csproj", "{9CAF885A-8ED9-F046-6A7B-B29C01633403}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevToolsGenerator", "..\third_party\dotnet\devtools\src\generator\DevToolsGenerator.csproj", "{9CAF885A-8ED9-F046-6A7B-B29C01633403}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
