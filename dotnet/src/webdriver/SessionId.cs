@@ -24,7 +24,10 @@ namespace OpenQA.Selenium
     /// <summary>
     /// Provides a mechanism for maintaining a session for a test
     /// </summary>
-    public class SessionId
+    public class SessionId : IFormattable
+#if NET8_0_OR_GREATER
+        , ISpanFormattable
+#endif
     {
         private readonly string sessionOpaqueKey;
 
@@ -65,5 +68,20 @@ namespace OpenQA.Selenium
         {
             return obj is SessionId otherSession && this.sessionOpaqueKey.Equals(otherSession.sessionOpaqueKey);
         }
+
+        /// <inheritdoc/>
+        public string ToString(string? format, IFormatProvider? formatProvider)
+        {
+            return this.sessionOpaqueKey.ToString(formatProvider);
+        }
+
+#if NET8_0_OR_GREATER
+
+        /// <inheritdoc/>
+        public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+        {
+            return destination.TryWrite(provider, $"{this.sessionOpaqueKey}", out charsWritten);
+        }
+#endif
     }
 }
